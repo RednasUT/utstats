@@ -1,7 +1,7 @@
 <?php
 
 // Get last map, time, scores
-$qlastMaps = small_query("SELECT id, mapfile, time, t0score, t1score, t2score, t3score FROM uts_match WHERE time = (SELECT MAX(time) FROM uts_match)");
+$qlastMaps = small_query("SELECT id, mapfile, time, t0score, t1score, t2score, t3score, teamgame FROM uts_match WHERE time = (SELECT MAX(time) FROM uts_match)");
 $lastMapId = $qlastMaps['id'];
 $lastMapFile = $qlastMaps['mapfile'];
 $lastMapFileName = rtrim($lastMapFile, ".unr");
@@ -11,6 +11,8 @@ $lastMapScore0 = $qlastMaps['t0score'];
 $lastMapScore1 = $qlastMaps['t1score'];
 $lastMapScore2 = $qlastMaps['t2score'];
 $lastMapScore3 = $qlastMaps['t3score'];
+$lastMapTeamGame = ($qlastMaps['teamgame'] == 'True') ? true : false;
+
 $moreThan2Teams = ($lastMapScore2!=0);
 
 $mappic = getMapImageName($lastMapFileName);
@@ -30,26 +32,33 @@ echo '
     <table style="width:100%; padding-top: 25px;">
 			<tr>
         <td colspan=3><p class="carousel-header">'.$lastMapFileName.'</p></td>
-      </tr>
-			<tr>
-				<td class="carousel-red';
-				if ($moreThan2Teams) {
-					echo '-small';
-				}
-				echo '">'.$lastMapScore0.'</td>
-				<td ';
-				if ($moreThan2Teams) {
-					echo 'rowspan=2 ';
-				}
-				echo '
-				class="carousel-text" style="width:30%;">'.mdate($lastMapTime).' </td>
-				<td class="carousel-blue';
-				if  ($moreThan2Teams) {
-					echo '-small';
-				}
-				echo '">'.$lastMapScore1.'</td>
-			</tr>';
-
+      </tr>';
+      if ($lastMapTeamGame) { echo'
+        <tr>
+        <td class="carousel-red';
+        if ($moreThan2Teams) {
+          echo '-small';
+        }
+        echo '">'.$lastMapScore0.'</td>
+        <td ';
+        if ($moreThan2Teams) {
+          echo 'rowspan=2 ';
+        }
+        echo '
+        class="carousel-text" style="width:30%;">'.mdate($lastMapTime).' </td>
+        <td class="carousel-blue';
+        if  ($moreThan2Teams) {
+          echo '-small';
+        }
+        echo '">'.$lastMapScore1.'</td>
+        </tr>';
+      } else {
+        echo '
+        <tr>
+                <td class="carousel-text" style="width:35%;">' . mdate($lastMapTime) . '</td>
+                <td class="carousel-blue" style="width:65%;">' . GetWinnerPlayerNameByMatch($lastMapId) . '</td>
+        </tr>';
+      }
 			if ($moreThan2Teams) {
   			echo '
   			<tr>
@@ -68,23 +77,25 @@ echo '
 <table width="900" class="box zebra" border="0" cellpadding="0" cellspacing="0">
 <tbody>
   <tr>
-    <th class="heading" colspan="7" align="center">Last 10 Matches</th>
+    <th class="heading" colspan="7" align="center">Last ' . HOME_NUMBERS_OF_MATCH_LIST . ' Matches</th>
   </tr>
   <tr>
     <th class="smheading" align="center" width="40">ID</th>
     <th class="smheading" align="center" width="220">Date/Time</th>
     <th class="smheading" align="center" width="140">Match Type</th>
     <th class="smheading" align="center">Map</th>
+    <th class="smheading" align="center">Warriors</th>
     <th class="smheading" align="center" width="200">Scores</th>
   </tr>';
 
-$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.time DESC LIMIT 10";
+$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, teamgame, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.time DESC LIMIT " . HOME_NUMBERS_OF_MATCH_LIST . "";
 $q_recent = mysql_query($sql_recent) or die(mysql_error());
 
 while ($r_recent = mysql_fetch_array($q_recent)) {
   $r_time = mdate($r_recent[time]);
   $r_mapfile = un_ut($r_recent[mapfile]);
   $r_gametime = GetMinutes($r_recent[gametime]);
+  $r_teamgame = ($r_recent['teamgame'] == 'True') ? true : false;
   $winner = max($r_recent[t0score], $r_recent[t1score], $r_recent[t2score], $r_recent[t3score]);
 
   if ($winner == $r_recent[t0score]) {
@@ -108,8 +119,11 @@ while ($r_recent = mysql_fetch_array($q_recent)) {
   <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent[id].'">
   	<td align="center">'.$r_recent[id].'</td>
   	<td nowrap align="center"><a href="./?p=match&amp;mid='.$r_recent[id].'">'.$r_time.'</a></td>
-  	<td nowrap align="center">'.$r_recent[gamename].'</td>
-  	<td align="center">'.$r_mapfile.'</td>
+    <td nowrap align="center">'.$r_recent[gamename].'</td>
+    <td align="center">'.$r_mapfile.'</td>
+    <td nowrap align="center">'.$r_recent[players].'</td>';
+    if ($r_teamgame) {
+    echo '
   	<td class="tooltip" title="'.$winmsg.'" align="center">
       <span class="redbox">'.$r_recent[t0score].'</span><span class="bluebox">'.$r_recent[t1score].'</span>';
 
@@ -117,7 +131,11 @@ while ($r_recent = mysql_fetch_array($q_recent)) {
       	echo '<span class="greenbox">'.$r_recent[t2score].' </span> <span class="goldbox">'.$r_recent[t3score].'</span>';
     	}
 
-	  echo '</td>
+    echo '</td>';
+    } else {
+      echo '<td align="center"><span class="bronzebox">'.GetWinnerPlayerNameByMatch($r_recent[id]).'</span></td>';
+    }
+    echo '
   </tr>';
 }
 

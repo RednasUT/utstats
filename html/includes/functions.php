@@ -331,6 +331,16 @@ function ordinal($number) {
   return $suffix;
 }
 
+function GetWinnerPlayerNameByMatch($mid, $decorate = false) {
+  $winner = small_query("select uts_pinfo.* from uts_player inner join uts_pinfo on uts_player.pid = uts_pinfo.id where matchid = ".$mid." order by gamescore DESC limit 2;");
+  if (!$winner) return('');
+  if ($decorate) {
+    return FormatPlayerName($winner[country], $winner[id], $winner[name]);
+  } else {
+    return $winner[name];
+  }
+}
+
 function RankImageOrText($pid, $name, $rank, $gid, $gamename, $mini = true, $format = NULL, $rankchange = NULL) {
   $points = 0;
 
@@ -584,6 +594,7 @@ function DeBugMessage($message) {
 }
 
 function getMapImageName($mapname) {
+  $originalMapname = $mapname;
   for ($i = 0; $i < 3; $i++) {
     // try substracting modname from map
     if ($i == 1) {
@@ -653,7 +664,13 @@ function getMapImageName($mapname) {
       return $mappic;
     }
   }
-
+  $mappic = strtolower("assets/images/maps/" . $mapname . "_large.jpg");
+  
+  # last chance
+  $originalmappic = strtolower("assets/images/maps/" . $originalMapname . ".jpg");
+  if(file_exists(dirname(dirname(__FILE__)) . "/" . $originalmappic)) {
+    return $originalmappic;
+  }
   return "assets/images/maps/blank_large.png";
 }
 

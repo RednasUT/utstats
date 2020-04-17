@@ -112,16 +112,18 @@ echo '
     <th class="smheading" align="center" width="220">Date/Time</th>
     <th class="smheading" align="center" width="140">Match Type</th>
     <th class="smheading" align="center">Map</th>
+    <th class="smheading" align="center">Warriors</th>
 	  <th class="smheading" align="center" width="200">Scores</th>
   </tr>';
 
-$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.time DESC LIMIT ".mysql_real_escape_string($qpage).",50";
+$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, teamgame, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.time DESC LIMIT ".mysql_real_escape_string($qpage).",50";
 $q_recent = mysql_query($sql_recent) or die(mysql_error());
 
 while ($r_recent = mysql_fetch_array($q_recent)) {
   $r_time = mdate($r_recent[time]);
   $r_mapfile = un_ut($r_recent[mapfile]);
   $r_gametime = GetMinutes($r_recent[gametime]);
+  $r_teamgame = ($r_recent['teamgame'] == 'True') ? true : false;
   $winner = max($r_recent[t0score], $r_recent[t1score], $r_recent[t2score], $r_recent[t3score]);
   $moreThan2Teams = ($r_recent[t2score]!=0);
 
@@ -148,13 +150,19 @@ while ($r_recent = mysql_fetch_array($q_recent)) {
     <td nowrap align="center"><a href="./?p=match&amp;mid='.$r_recent[id].'">'.$r_time.'</a></td>
     <td nowrap align="center">'.$r_recent[gamename].'</td>
     <td align="center">'.$r_mapfile.'</td>
-    <td class="tooltip" title="'.$winmsg.'" align="center"><span class="redbox">'.$r_recent[t0score].'</span><span class="bluebox">'.$r_recent[t1score].'</span>';
+    <td nowrap align="center">'.$r_recent[players].'</td>';
+    if ($r_teamgame) {
+      echo '
+      <td class="tooltip" title="'.$winmsg.'" align="center"><span class="redbox">'.$r_recent[t0score].'</span><span class="bluebox">'.$r_recent[t1score].'</span>';
 
-		if  ($moreThan2Teams) {
-			echo '<span class="greenbox">'.$r_recent[t2score].' </span><span class="goldbox">  '.$r_recent[t3score].' </span>';
-		}
-
-    '</td>
+      if  ($moreThan2Teams) {
+        echo '<span class="greenbox">'.$r_recent[t2score].' </span><span class="goldbox">  '.$r_recent[t3score].' </span>';
+      }
+      echo '</td>';
+    } else {
+      echo '<td align="center"><span class="bronzebox">'.GetWinnerPlayerNameByMatch($r_recent[id]).'</span></td>';
+    }
+    echo '
   </tr>';
 }
 
