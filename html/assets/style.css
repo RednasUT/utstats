@@ -135,8 +135,8 @@ input[type="submit"]:hover {
   height: 100%;
 }
 .navbar .logo img {
-  height: 36px;
-  margin-top: 10px;
+  height: 55px;
+  /* margin-top: 10px; */
 }
 
 .footer {
@@ -289,6 +289,17 @@ th {
   background: -o-linear-gradient(#efc100, #e0b501);
   background: -moz-linear-gradient(#efc100, #e0b501);
   background: linear-gradient(#efc100, #e0b501);
+  height: 30px;
+}
+.bronze {
+  font-family: Montserrat, Verdana, Arial, Helvetica;
+  font-weight: 700;
+  font-size: 10pt;
+  color: #ffffff;
+  background: -webkit-linear-gradient(#666565, #1f1f1f);
+  background: -o-linear-gradient(#666565, #1f1f1f);
+  background: -moz-linear-gradient(#666565, #1f1f1f);
+  background: linear-gradient(#666565, #1f1f1f);
   height: 30px;
 }
 .score {
@@ -1074,9 +1085,27 @@ a.pages:hover {
   ); /* For Firefox 3.6 to 15 */
   background: linear-gradient(#efc100, #e0b501); /* Standard syntax */
 }
+.bronzeteam,
+.bronzeteamb,
+.bronzebox {
+  font-size: 8pt;
+  color: #000000;
+  background: -webkit-linear-gradient(
+    #666565,
+    #1f1f1f
+  ); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#666565, #1f1f1f); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(
+    #666565,
+    #1f1f1f
+  ); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#666565, #1f1f1f);
+  /* Standard syntax */
+}
 .bluebox,
 .redbox,
-.greenbox {
+.greenbox,
+.bronzebox {
   margin-left: 3px;
   display: inline-block;
   height: 13px;

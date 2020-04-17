@@ -12,7 +12,7 @@ function teamstats($mid, $title, $extra = NULL, $extratitle = NULL, $order = 'ga
   $teamscore[2] = $r_info['t2score'];
   $teamscore[3] = $r_info['t3score'];
 
-  $cols = 10;
+  $cols = 11;
   if ($teams) $cols++;
   if ($extra) $cols++;
 
@@ -30,7 +30,7 @@ function teamstats($mid, $title, $extra = NULL, $extratitle = NULL, $order = 'ga
   $q_players = mysql_query($sql_players) or die(mysql_error());
   $header = true;
   teamstats_init_totals($totals, $num);
-
+  $i = 1;
   while ($r_players = zero_out(mysql_fetch_array($q_players))) {
     $r_players['dom_cp'] = $r_players['gamescore'] - $r_players['frags'];
     $r_players['team'] = intval($r_players['team']);
@@ -51,9 +51,11 @@ function teamstats($mid, $title, $extra = NULL, $extratitle = NULL, $order = 'ga
       $header = true;
     }
     if ($header) {
+      $i = 1;
       $header = false;
       echo '
       <tr>
+        <th class="smheading " align="center">#</th>
         <th class="smheading " align="center">Player</th>
         <th class="smheading " align="center" width="50">Time</th>
         <th class="smheading " align="center" width="50">Score</th>';
@@ -104,6 +106,7 @@ function teamstats($mid, $title, $extra = NULL, $extratitle = NULL, $order = 'ga
 
     $class = ($num % 2) ? 'grey' : 'grey2';
     echo '<tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_players['pid'].'">';
+    echo '<td align="center">'. $i++ .'</td>';
     if ($r_players['banned'] != 'Y') {
       echo '<td nowrap   align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_players['pid'].'">'.FormatPlayerName($r_players['country'], $r_players['pid'], $r_players['name'], $gid, $gamename, true, $r_players['rank']).'</a></td>';
     } else {
@@ -152,7 +155,7 @@ function teamstats_team_totals(&$totals, $num, $teams, $extra, $teamscore) {
   $ttl = GetMinutes($totals['ttl'] / $num);
 
   echo '<tr>';
-  echo '<td nowrap class="totals" align="center">Totals</td>';
+  echo '<td nowrap colspan="2" class="totals" align="center">Totals</td>';
   echo '<td class="totals" align="center"></td>';
   if ($teams) {
     echo '<td class="totals" align="center"><strong>'.$teamscore.'</strong> ('.$totals[gamescore].')</td>';
