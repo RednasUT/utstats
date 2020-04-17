@@ -239,4 +239,16 @@ define("RENDERER_CHART_FRAGS_PLAYERNORMAL5", 97);
 define("RENDERER_CHART_ITEMS_TEAMPICKUPS", 100);
 define("RENDERER_CHART_ITEMS_PLAYERPICKUPS", 101);
 define("RENDERER_CHART_ITEMS_AMPRUNS", 102);
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# General site settings / behavior
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+# Define the numbers of last matches to list in home page view
+define("HOME_NUMBERS_OF_MATCH_LIST", 20);
+
+# Engage the weight for rank if a player have a gametime lower of x% 
+# on total time for a gametype
+define("PERC_ON_GAMETIME_ENGAGING_WEIGHT_ON_RANK", 0.45);
 ?>
