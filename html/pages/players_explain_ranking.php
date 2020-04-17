@@ -55,6 +55,10 @@ if (!$r_game) {
 }
 $real_gamename = $r_game['gamename'];
 
+// Get the SUM of the player with the MAX gametime for each match by game type.
+// Avoid to SUM the total match time because non ended matches make exploding gametime
+$weight_sum_max_match_time_for_player = small_query("SELECT SUM(max_match_time_for_player) as max_match_time_for_player FROM ( select MAX(uts_player.gametime) as max_match_time_for_player from uts_player inner join uts_match ON uts_match.id = uts_player.matchid where uts_match.gid = $gid group by matchid ) as x");
+$weight_for_rank = ceil($weight_sum_max_match_time_for_player[max_match_time_for_player]/60);
 
 $r_cnt = small_query("SELECT
 		SUM(frags) AS frags, SUM(deaths) AS deaths, SUM(suicides) AS suicides, SUM(teamkills) AS teamkills,
@@ -154,26 +158,15 @@ echo '<tr>	<td>Divided by game minutes</td>
 				<td  align="center"></td>
 				<td  align="right">'. get_dp($t_points) .'</td>
 		</tr>';
-		
-IF ($gametime < 10) {
-	$t_points += row('Penalty for playing < 10 minutes', get_dp($t_points), 0, false);
+
+// Add dynamic weight for players with a low percentace of played time
+// More weight for casual gamers in order to avoid "1 match ( or lower presence ) and player first in rank :)"
+if ( ( $gametime/$weight_for_rank ) < PERC_ON_GAMETIME_ENGAGING_WEIGHT_ON_RANK) {
+	$t_points += row('Penalty for playing only ' . round(($gametime/$weight_for_rank)*100,1) . '% of total time', get_dp($t_points), round(($gametime/$weight_for_rank),2), false);
+} else {
+	$t_points += row('No Penalty, played ' . round(($gametime/$weight_for_rank)*100,1) . '% of total time', get_dp($t_points), 1, false);
 }
 
-IF ($gametime >= 10 && $gametime < 50) {
-	$t_points += row('Penalty for playing < 50 minutes', get_dp($t_points), -0.75, false);
-}
-
-IF ($gametime >= 50 && $gametime < 100) {
-	$t_points += row('Penalty for playing < 100 minutes', get_dp($t_points), -0.5, false);
-}
-
-IF ($gametime >= 100 && $gametime < 200) {
-	$t_points += row('Penalty for playing < 200 minutes', get_dp($t_points), -0.3, false);
-}
-
-IF ($gametime >= 200 && $gametime < 300) {
-	$t_points += row('Penalty for playing < 300 minutes', get_dp($t_points), -0.15, false);
-}
 echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
 echo '<tr>	<td class="totals"><strong>Ranking points</strong></td>
 				<td class="totals" align="center"></td>

@@ -101,7 +101,7 @@
 		  <br />Points are awarded for fragging and events (eg. flag captures).
 		  <br />Points are deducted for deaths, suicides and teamkills
 		  <br />
-		  <br />Player ranking points are reduced until they have completed 300 minutes of games.</p>
+		  <br />Player ranking points are reduced proportionally based on their played time and until they have completed at least of <?php echo PERC_ON_GAMETIME_ENGAGING_WEIGHT_ON_RANK*100 ?> on total minutes of a game type</p>
 		</blockquote>
 		<p>
 		  <h2><a name="score"></a>
@@ -300,3 +300,4 @@
 	</tr>
   </tbody>
 </table>
+

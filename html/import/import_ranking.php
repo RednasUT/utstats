@@ -1,5 +1,12 @@
 <?php
 	if ($playerbanned) return;
+
+		// Get the SUM of the player with the MAX gametime for each match by game type.
+		// Avoid to SUM the total match time because non ended matches make exploding gametime
+		// TODO: OPTIMIZE because this generate long time execution for ./html/pages/admin/recalcranking.php in huge database
+		$weight_sum_max_match_time_for_player = small_query("SELECT SUM(max_match_time_for_player) as max_match_time_for_player FROM ( select MAX(uts_player.gametime) as max_match_time_for_player from uts_player inner join uts_match ON uts_match.id = uts_player.matchid where uts_match.gid = $gid AND uts_match.id <= $matchid group by matchid ) as x");
+		$weight_for_rank = ceil($weight_sum_max_match_time_for_player[max_match_time_for_player]/60);
+
 // Get sums of different events
 
 		// Work out all possible ranking scores
@@ -23,7 +30,7 @@
 		$rank_fneg = $r_cnt[deaths]+$r_cnt[suicides]+$r_cnt[teamkills];
 		$r_gametime = ceil($r_cnt[gametime]/60);
 		
-		
+
 		// Select rank record
 		$r_rankp = small_query("SELECT id, time, rank, matches FROM uts_rank WHERE pid = '$pid' AND gid = '$gid'");
 		$rank_id = $r_rankp[id];
@@ -81,23 +88,10 @@
 		// Add rank gametime to previous amount
 		$rank_gametime = $r_gametime;
 
-		// Reduce ranking if player hasnt played that much
-		IF ($rank_gametime < 10) return;
-		
-		IF ($rank_gametime < 50) {
-			$rank_nrank = $rank_nrank*.25;
-		}
-		
-		IF ($rank_gametime >= 50 && $rank_gametime < 100) {
-			$rank_nrank = $rank_nrank*.50;
-		}
-		
-		IF ($rank_gametime >= 100 && $rank_gametime < 200) {
-			$rank_nrank = $rank_nrank*.70;
-		}
-
-		IF ($rank_gametime >= 200 && $rank_gametime < 300) {
-			$rank_nrank = $rank_nrank*.85;
+		// Add dynamic weight for players with a low percentace of played time
+		// More weight for casual gamers in order to avoid "1 match ( or lower presence ) and player first in rank :)"
+		if ( ( $rank_gametime/$weight_for_rank ) < PERC_ON_GAMETIME_ENGAGING_WEIGHT_ON_RANK) {
+				$rank_nrank = $rank_nrank*($rank_gametime/$weight_for_rank);
 		}
 
 		if ($dbg) echo "Reduced: $rank_nrank<br>";
@@ -125,3 +119,4 @@
 		// Update the rank
 		mysql_query("UPDATE uts_rank SET time = '$rank_gametime', rank = '$rank_nrank', prevrank = '$rank_crank', matches = '$rank_matches' WHERE id = $rank_id;") or die(mysql_error());
 ?>
+
