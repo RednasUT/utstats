@@ -655,7 +655,7 @@ $t0info, $t1info, $t2info, $t3info, $t0score, $t1score, $t2score, $t3score);";
 
 			// Get Gametype specific stuff done
 			if ($gamename == "Assault" || $gamename == "Assault (insta)") { include("import/import_ass.php"); }
-			if ($gamename == "Capture the Flag" || $gamename == "Capture the Flag (insta)") { include("import/import_ctf.php"); }
+			if ($gamename == "Capture the Flag" || $gamename == "New Capture the Flag" || $gamename == "Capture the Flag (insta)") { include("import/import_ctf.php"); }
 			if ($gamename == "Bunny Track") { include("import/import_bt.php"); }
 			if ($gamename == "Domination" || $gamename == "Domination (insta)") { include("import/import_dom.php"); }
 			if ($gamename == "Tournament Team Game" || $gamename == "Tournament Team Game (insta)") { include("import/import_tdm.php"); }
